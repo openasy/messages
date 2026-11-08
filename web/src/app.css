@@ -1,0 +1,112 @@
+/* The few layouts this product needs that @openasy/ui's prebuilt styles do not include. Colours stay in the library's tokens. */
+
+.ms-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+fieldset.border-0 {
+  padding: 0;
+  margin: 0;
+}
+
+/* A list beside a panel, and halves; the panel goes under the list until the screen is wide. */
+.ms-split-side,
+.ms-split-side-wide,
+.ms-halves {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1280px) {
+  .ms-split-side {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+  .ms-split-side-wide {
+    grid-template-columns: minmax(0, 1fr) 400px;
+  }
+  .ms-halves {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.ms-two {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.ms-facts {
+  grid-template-columns: 110px minmax(0, 1fr);
+  margin: 0;
+}
+
+/* FileSettings.tsx, rebuilt from the ui repo's Storybook page. */
+.kb-split-halves {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1280px) {
+  .kb-split-halves {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.kb-settings-list {
+  grid-template-columns: minmax(120px, 40%) minmax(0, 1fr);
+  margin: 0;
+}
+.kb-code,
+.ms-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The A/B variant that won. */
+.ms-winner {
+  border-color: color-mix(in srgb, var(--oa-success) 40%, transparent);
+  background: var(--oa-success-soft);
+}
+
+/* A journey's steps, joined by a line. */
+.ms-step-line {
+  position: absolute;
+  top: 1.75rem;
+  bottom: 0;
+  left: 13px;
+  width: 1px;
+  background: var(--oa-line);
+}
+.ms-step-dot {
+  position: relative;
+  z-index: 1;
+}
+
+.ms-step-edit {
+  grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.ms-pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ms-frame {
+  width: 100%;
+  height: 22rem;
+  border: 1px solid var(--oa-line);
+  border-radius: 0.375rem;
+  background: #fff;
+}
+
+.ms-textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--oa-line-strong);
+  border-radius: 0.375rem;
+  background: var(--oa-surface);
+  color: var(--oa-fg);
+  font-family: var(--oa-font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+.ms-textarea:focus-visible {
+  outline: 2px solid var(--oa-ring, var(--oa-accent));
+  outline-offset: 1px;
+}

@@ -1,0 +1,49 @@
+# Messages. Providers, consent, the linked products and tracking are set in messages.yaml; keys are environment variables.
+#
+#   openssl rand -hex 32 > openasy-kek   # messages' key: sign-in secrets (ADR 0021). Keep it with your backups
+#   docker compose up -d
+#   docker compose logs messages | grep 'no owner yet'   # the one-time link that creates the owner account
+services:
+  messages:
+    image: ghcr.io/openasy/messages:0.1.0
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: [/tmp]
+    ports:
+      - "127.0.0.1:8080:8080" # UI, API, tracked links and webhooks; put a TLS proxy in front
+    volumes:
+      - messages-data:/data # SQLite database: templates, campaigns, journeys, every message and its results
+      - ./config:/config:ro # messages.yaml; mount the folder so an editor's save reaches it
+    secrets:
+      - openasy-kek # mounted at /run/secrets/openasy-kek
+    environment:
+      # The address people open Messages at, and every link in a message points to: its https:// URL.
+      MESSAGES_PUBLIC_URL: ${MESSAGES_PUBLIC_URL:-http://localhost:8080}
+      MESSAGES_CONFIG: /config/messages.yaml
+      # The keys the file names, each from your provider or the linked product:
+      # MESSAGES_SES_ACCESS_KEY: ${MESSAGES_SES_ACCESS_KEY}
+      # MESSAGES_SES_SECRET_KEY: ${MESSAGES_SES_SECRET_KEY}
+      # MESSAGES_SMTP_USER: ${MESSAGES_SMTP_USER}
+      # MESSAGES_SMTP_PASSWORD: ${MESSAGES_SMTP_PASSWORD}
+      # MESSAGES_NETGSM_USER: ${MESSAGES_NETGSM_USER}
+      # MESSAGES_NETGSM_PASSWORD: ${MESSAGES_NETGSM_PASSWORD}
+      # MESSAGES_WHATSAPP_TOKEN: ${MESSAGES_WHATSAPP_TOKEN}
+      # MESSAGES_WHATSAPP_APP_SECRET: ${MESSAGES_WHATSAPP_APP_SECRET}
+      # MESSAGES_WHATSAPP_VERIFY_TOKEN: ${MESSAGES_WHATSAPP_VERIFY_TOKEN}
+      # MESSAGES_CONSENT_TOKEN: ${MESSAGES_CONSENT_TOKEN}
+      # MESSAGES_AUDIENCE_TOKEN: ${MESSAGES_AUDIENCE_TOKEN}
+      # The install's other products, for the product switcher, and where products without a url in the file are called:
+      # OPENASY_PRODUCTS: consent=https://consent.example.com,audience=https://audience.example.com
+      # Sign in with your identity provider (OIDC), see the README:
+      # OPENASY_OIDC_ISSUER: https://login.example.com
+      # OPENASY_OIDC_CLIENT_ID: messages
+      # OPENASY_OIDC_CLIENT_SECRET: ${OPENASY_OIDC_CLIENT_SECRET}
+
+volumes:
+  messages-data:
+
+secrets:
+  openasy-kek:
+    file: ./openasy-kek

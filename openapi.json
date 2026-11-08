@@ -1,0 +1,4699 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAsy Messages API",
+    "version": "0.1.0",
+    "summary": "Email, SMS and WhatsApp campaigns and journeys through your own providers, only to people whose consent holds when each message is sent.",
+    "description": "Every screen of Messages uses this API, and so can your scripts (ADR 0014). Within `/api/v1` changes are additive only; anything removed is deprecated first (ADR 0024). Errors use Problem Details (RFC 9457).\n\nProviders, consent, the linked products and tracking come from the settings file, never the API. Opens, clicks and unsubscribes are at `/o/`, `/c/` and `/u/`, which people reach from a message, and the providers call `/hooks/`. Everything else takes the session of a signed-in person or an API token, and each operation names the role it needs (`x-openasy-role`: viewer, editor, admin; ADR 0003).\n\nSign-in, members and API tokens are under `/api/v1/auth`, provided by [@openasy/auth](https://github.com/openasy/auth#routes).",
+    "license": {
+      "name": "AGPL-3.0-only",
+      "identifier": "AGPL-3.0-only"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "This Messages"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Campaigns",
+      "description": "One send to a segment or a list."
+    },
+    {
+      "name": "Journeys",
+      "description": "Messages started by an event, with waits and conditions."
+    },
+    {
+      "name": "Templates",
+      "description": "The words, with personal fields."
+    },
+    {
+      "name": "Lists",
+      "description": "Who receives: Audience's segments and imported lists."
+    },
+    {
+      "name": "People",
+      "description": "Bounces, opt-outs and erasure."
+    },
+    {
+      "name": "Tracking",
+      "description": "What people reach from a message."
+    },
+    {
+      "name": "Webhooks",
+      "description": "What the providers call."
+    },
+    {
+      "name": "Product",
+      "description": "Version, settings and overview."
+    }
+  ],
+  "paths": {
+    "/api/v1/templates": {
+      "get": {
+        "operationId": "listTemplates",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Templates",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "post": {
+        "operationId": "createTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Make a template",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the editor role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Template"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/templates/sync": {
+      "post": {
+        "operationId": "syncTemplates",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Read WhatsApp templates from Meta",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Updates the approval of every WhatsApp template from GET /{waba-id}/message_templates, and adds the approved ones not here yet. Needs the editor role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/templates/{id}": {
+      "get": {
+        "operationId": "getTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "A template",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Template"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "patch": {
+        "operationId": "updateTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Change a template",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplatePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Template"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      },
+      "delete": {
+        "operationId": "deleteTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Delete a template",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Refused while a campaign or journey uses it. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/templates/{id}/preview": {
+      "post": {
+        "operationId": "previewTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "A template as a person gets it",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "With the fields of people who got messages on its channel lately, or of an imported list, or a sample person. Links are tagged but not tracked. Needs the viewer role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/lists": {
+      "get": {
+        "operationId": "listLists",
+        "tags": [
+          "Lists"
+        ],
+        "summary": "Imported lists",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "post": {
+        "operationId": "importList",
+        "tags": [
+          "Lists"
+        ],
+        "summary": "Import a list",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "A CSV of people for a campaign without Audience. Consent is still asked for every message when it is sent. Needs the editor role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportedList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/lists/{id}": {
+      "delete": {
+        "operationId": "deleteList",
+        "tags": [
+          "Lists"
+        ],
+        "summary": "Delete a list",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/segments": {
+      "get": {
+        "operationId": "listSegments",
+        "tags": [
+          "Lists"
+        ],
+        "summary": "Audience's segments",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Read from Audience with the token the file names. Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/estimate": {
+      "post": {
+        "operationId": "estimate",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "How many may get it today",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Reads up to 5,000 of the audience and asks Consent for each now. Only an estimate: consent is asked again for each message when it is sent. Needs the viewer role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estimate"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/campaigns": {
+      "get": {
+        "operationId": "listCampaigns",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Campaigns",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "post": {
+        "operationId": "createCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Make a campaign",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "A draft; nothing is sent before it is scheduled. Needs the editor role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/campaigns/{id}": {
+      "get": {
+        "operationId": "getCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "A campaign and its results",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "patch": {
+        "operationId": "updateCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Change a campaign",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Only before it starts sending. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      },
+      "delete": {
+        "operationId": "deleteCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Delete a campaign",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Only one that has sent nothing. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/campaigns/{id}/schedule": {
+      "post": {
+        "operationId": "scheduleCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Schedule or resume",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "A draft starts at `at`; a paused one carries on where it stopped. Nobody gets a message twice. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/campaigns/{id}/pause": {
+      "post": {
+        "operationId": "pauseCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Pause",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Nothing more is sent until it is scheduled again. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/campaigns/{id}/messages": {
+      "get": {
+        "operationId": "listCampaignMessages",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "A campaign's messages",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Up to 200, in one state if `state` is given: to look at unknown, failed or held ones. Needs the viewer role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignMessages"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/journeys": {
+      "get": {
+        "operationId": "listJourneys",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Journeys",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "post": {
+        "operationId": "createJourney",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Make a journey",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "A draft; nobody enters before it starts. Needs the editor role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journey"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/journeys/{id}": {
+      "get": {
+        "operationId": "getJourney",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "A journey and who is at each step",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journey"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      },
+      "patch": {
+        "operationId": "updateJourney",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Change a journey",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "The trigger, goal and steps only while it is a draft. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journey"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      },
+      "delete": {
+        "operationId": "deleteJourney",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Delete a journey",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Only one nobody has entered. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/journeys/{id}/start": {
+      "post": {
+        "operationId": "startJourney",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Start or resume",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journey"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/journeys/{id}/pause": {
+      "post": {
+        "operationId": "pauseJourney",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Pause",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Nobody new enters, and people inside wait at their step. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journey"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/events": {
+      "post": {
+        "operationId": "postEvents",
+        "tags": [
+          "Journeys"
+        ],
+        "summary": "Events from your app",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Such as signup: it starts the live journeys it triggers, and converts the people whose journey has it as the goal. Up to 1000 at once. Needs the editor role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventBatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/bounces": {
+      "get": {
+        "operationId": "listBounces",
+        "tags": [
+          "People"
+        ],
+        "summary": "Bounces",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Hard bounces not fixed yet, one per address, and soft bounces of the last 30 days. Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BounceList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/bounces/{id}": {
+      "delete": {
+        "operationId": "clearBounce",
+        "tags": [
+          "People"
+        ],
+        "summary": "Fixed, send again",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Clears every hard bounce of the address. Needs the editor role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The address may be sent to again."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "editor"
+      }
+    },
+    "/api/v1/optouts": {
+      "get": {
+        "operationId": "listOptOuts",
+        "tags": [
+          "People"
+        ],
+        "summary": "Opt-outs",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Messages' own list: every unsubscribe, STOP and spam complaint. It is checked before every message, with or without Consent. Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptOutList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/erasures": {
+      "post": {
+        "operationId": "erasure",
+        "tags": [
+          "People"
+        ],
+        "summary": "Delete a person on request",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Audience's erasure contract: everything about the people with these identifiers is deleted here. Opt-outs and hard bounces keep only a hash of the address, so they are not written to again. The same reference again gives the same answer. Needs the admin role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErasureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErasureAnswer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "admin"
+      }
+    },
+    "/o/{id}.gif": {
+      "get": {
+        "operationId": "openPixel",
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Open pixel",
+        "security": [],
+        "description": "In every email when tracking.opens is on; counts the message as opened once.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A 1x1 GIF.",
+            "content": {
+              "image/gif": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{id}/{n}": {
+      "get": {
+        "operationId": "trackedLink",
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Tracked link",
+        "security": [],
+        "description": "Counts the click and sends the person on to the link, tagged with utm_source, utm_medium and utm_campaign for Analytics.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "n",
+            "in": "path",
+            "required": true,
+            "description": "The link's place in the message, from 0.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "To the tagged address."
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/u/{id}": {
+      "get": {
+        "operationId": "unsubscribePage",
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Unsubscribe page",
+        "security": [],
+        "description": "Asks first, so link checkers do not unsubscribe anyone.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The page.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such message.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "unsubscribe",
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Unsubscribe",
+        "security": [],
+        "description": "The page's button, and RFC 8058 one-click (List-Unsubscribe-Post: List-Unsubscribe=One-Click). Takes effect at once and is recorded in Consent.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unsubscribed.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such message.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hooks/ses": {
+      "post": {
+        "operationId": "sesHook",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Amazon SES events through SNS",
+        "security": [],
+        "description": "Set as the HTTPS subscription of the SNS topic the configuration set publishes to. Every message's signature is checked against Amazon's certificate, and its topic against sns_topic; subscriptions are confirmed.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/hooks/sms/{secret}": {
+      "get": {
+        "operationId": "smsReportGet",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "SMS delivery report (query)",
+        "security": [],
+        "description": "Netgsm's or İleti Merkezi's report push, with jobid (or id) and status. The address carries a secret: GET /api/v1/hooks.",
+        "parameters": [
+          {
+            "name": "secret",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HookResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "operationId": "smsReportPost",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "SMS delivery report",
+        "security": [],
+        "description": "The same as a JSON or form body.",
+        "parameters": [
+          {
+            "name": "secret",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HookResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/hooks/sms/{secret}/inbound": {
+      "get": {
+        "operationId": "smsInboundGet",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "SMS reply (query)",
+        "security": [],
+        "description": "A reply pushed by the provider, with the number (gsmno or from) and the text (msg or text). STOP, RET or İPTAL opts the number out at once.",
+        "parameters": [
+          {
+            "name": "secret",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HookResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "operationId": "smsInboundPost",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "SMS reply",
+        "security": [],
+        "description": "The same as a JSON or form body.",
+        "parameters": [
+          {
+            "name": "secret",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HookResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/hooks/whatsapp": {
+      "get": {
+        "operationId": "whatsappVerify",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "WhatsApp webhook check",
+        "security": [],
+        "description": "Meta's check when the webhook is set: answers hub.challenge when hub.verify_token matches.",
+        "parameters": [
+          {
+            "name": "hub.mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.verify_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.challenge",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The challenge.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "operationId": "whatsappHook",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "WhatsApp statuses, replies and template approvals",
+        "security": [],
+        "description": "Refused unless X-Hub-Signature-256 is the HMAC-SHA256 of the body with the app secret.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "received"
+                  ],
+                  "properties": {
+                    "received": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/api/v1/summary": {
+      "get": {
+        "operationId": "getSummary",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Overview",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Counts for the menu, the providers and the linked products. Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/overview": {
+      "get": {
+        "operationId": "getOverview",
+        "tags": [
+          "Product"
+        ],
+        "summary": "What was sent",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "description": "7, 14, 30 (default) or 90.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Overview"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "getSettings",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Settings as applied",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "messages.yaml as applied. No route changes it. Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/hooks": {
+      "get": {
+        "operationId": "getHooks",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Webhook addresses",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "What to set in each provider. The SMS ones carry a secret. Needs the admin role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hooks"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "admin"
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "listProducts",
+        "tags": [
+          "Product"
+        ],
+        "summary": "The install's other products",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "description": "Needs the viewer role.",
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "x-openasy-role": "viewer"
+      }
+    },
+    "/api/v1/version": {
+      "get": {
+        "operationId": "getVersion",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Product and version",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "liveness",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Liveness",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The process is running.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "operationId": "readiness",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Readiness",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "metrics",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Prometheus metrics",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Metrics in the Prometheus text format.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-openasy-session",
+        "description": "The browser session after signing in (`openasy-session` when Messages runs on plain http://localhost). Requests that change something must come from the Messages origin."
+      },
+      "apiToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API token created under Settings, API tokens (`oa_messages_...`): one role, always an expiry (ADR 0003)."
+      },
+      "adminToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Only when Messages is started by its tests or a local script: one shared token with the admin role. A production install does not have it."
+      }
+    },
+    "responses": {
+      "Problem": {
+        "description": "An error, as RFC 9457 Problem Details.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "invalid-token",
+              "invalid-json",
+              "invalid-body",
+              "invalid-signature",
+              "not-found",
+              "conflict",
+              "not-configured",
+              "payload-too-large",
+              "upstream-error",
+              "internal-error",
+              "unauthenticated",
+              "invalid-credentials",
+              "mfa-required",
+              "mfa-setup-required",
+              "forbidden",
+              "cross-site"
+            ],
+            "description": "Stable; match on this."
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "additionalProperties": true
+      },
+      "Status": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "Version": {
+        "type": "object",
+        "required": [
+          "product",
+          "version"
+        ],
+        "properties": {
+          "product": {
+            "const": "messages"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductList": {
+        "type": "object",
+        "required": [
+          "products"
+        ],
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "url"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ConfigFile": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "path",
+              "appliedAt",
+              "error",
+              "warnings"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "appliedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "warnings": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "Provider": {
+        "type": "object",
+        "required": [
+          "channel",
+          "role",
+          "kind",
+          "name",
+          "detail",
+          "rate",
+          "missing",
+          "state",
+          "okAt",
+          "error",
+          "sent"
+        ],
+        "properties": {
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ]
+          },
+          "role": {
+            "enum": [
+              "primary",
+              "fallback"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "ses",
+              "smtp",
+              "netgsm",
+              "iletimerkezi",
+              "whatsapp"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number",
+            "description": "Messages a second, at most."
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Environment variables the file names for it that are not set."
+          },
+          "state": {
+            "enum": [
+              "working",
+              "failing",
+              "standby",
+              "waiting"
+            ],
+            "description": "working: its last send went; failing: its last call failed; standby: not used yet; waiting: a key is missing."
+          },
+          "okAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sent": {
+            "type": "integer"
+          }
+        }
+      },
+      "LinkState": {
+        "type": "object",
+        "required": [
+          "id",
+          "linked",
+          "url",
+          "tokenVariable",
+          "tokenSet",
+          "okAt",
+          "error",
+          "errorAt"
+        ],
+        "properties": {
+          "id": {
+            "enum": [
+              "consent",
+              "audience"
+            ]
+          },
+          "linked": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tokenVariable": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tokenSet": {
+            "type": "boolean"
+          },
+          "okAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "errorAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Settings": {
+        "type": "object",
+        "required": [
+          "config",
+          "yaml",
+          "file",
+          "variables",
+          "publicUrl"
+        ],
+        "properties": {
+          "config": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "messages.yaml as applied, with names of environment variables, never their values."
+          },
+          "yaml": {
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/ConfigFile"
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "set"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "set": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "publicUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "required": [
+          "file",
+          "campaigns",
+          "journeys",
+          "bounces",
+          "unknown",
+          "waiting",
+          "providers",
+          "links",
+          "outbox"
+        ],
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/ConfigFile"
+          },
+          "campaigns": {
+            "type": "object",
+            "required": [
+              "active"
+            ],
+            "properties": {
+              "active": {
+                "type": "integer"
+              }
+            }
+          },
+          "journeys": {
+            "type": "object",
+            "required": [
+              "live"
+            ],
+            "properties": {
+              "live": {
+                "type": "integer"
+              }
+            }
+          },
+          "bounces": {
+            "type": "object",
+            "required": [
+              "hard"
+            ],
+            "properties": {
+              "hard": {
+                "type": "integer"
+              }
+            }
+          },
+          "unknown": {
+            "type": "integer",
+            "description": "Messages that may or may not have been sent, which are never sent again."
+          },
+          "waiting": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Why a channel's messages are waiting, by channel: no provider, quiet hours, Consent away."
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkState"
+            }
+          },
+          "outbox": {
+            "type": "integer"
+          }
+        }
+      },
+      "Hooks": {
+        "type": "object",
+        "required": [
+          "ses",
+          "smsReports",
+          "smsInbound",
+          "whatsapp"
+        ],
+        "properties": {
+          "ses": {
+            "type": "string"
+          },
+          "smsReports": {
+            "type": "string"
+          },
+          "smsInbound": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          }
+        }
+      },
+      "Totals": {
+        "type": "object",
+        "required": [
+          "sent",
+          "byChannel",
+          "delivered",
+          "emailSent",
+          "emailOpened",
+          "clicked",
+          "bounced",
+          "unsubscribed"
+        ],
+        "properties": {
+          "sent": {
+            "type": "integer"
+          },
+          "byChannel": {
+            "type": "object",
+            "required": [
+              "email",
+              "sms",
+              "whatsapp"
+            ],
+            "properties": {
+              "email": {
+                "type": "integer"
+              },
+              "sms": {
+                "type": "integer"
+              },
+              "whatsapp": {
+                "type": "integer"
+              }
+            }
+          },
+          "delivered": {
+            "type": "integer"
+          },
+          "emailSent": {
+            "type": "integer"
+          },
+          "emailOpened": {
+            "type": "integer"
+          },
+          "clicked": {
+            "type": "integer"
+          },
+          "bounced": {
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "type": "integer"
+          }
+        }
+      },
+      "Overview": {
+        "type": "object",
+        "required": [
+          "days",
+          "from",
+          "totals",
+          "before",
+          "series",
+          "links",
+          "providers"
+        ],
+        "properties": {
+          "days": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "totals": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Totals"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "held"
+                ],
+                "properties": {
+                  "held": {
+                    "type": "integer",
+                    "description": "Held back because consent did not hold when they were to be sent."
+                  }
+                }
+              }
+            ]
+          },
+          "before": {
+            "$ref": "#/components/schemas/Totals"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "day",
+                "email",
+                "sms",
+                "whatsapp"
+              ],
+              "properties": {
+                "day": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "integer"
+                },
+                "sms": {
+                  "type": "integer"
+                },
+                "whatsapp": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "label",
+                "clicks"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "clicks": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          }
+        }
+      },
+      "Template": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "channel",
+          "lang",
+          "subject",
+          "body",
+          "format",
+          "waName",
+          "waParams",
+          "approval",
+          "approvalAt",
+          "usedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ]
+          },
+          "lang": {
+            "type": "string"
+          },
+          "subject": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "text",
+              "html"
+            ]
+          },
+          "waName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "waParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "approval": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Meta's answer for a WhatsApp template: APPROVED, PENDING, REJECTED, PAUSED or DISABLED."
+          },
+          "approvalAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usedBy": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "TemplateList": {
+        "type": "object",
+        "required": [
+          "templates"
+        ],
+        "properties": {
+          "templates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Template"
+            }
+          }
+        }
+      },
+      "TemplateInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "channel"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ]
+          },
+          "lang": {
+            "type": "string",
+            "default": "tr"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Emails only; may use personal fields."
+          },
+          "body": {
+            "type": "string",
+            "description": "Text with {{fields}}; for email, text (paragraphs, [words](https://...)) or HTML. For WhatsApp, the approved body with {{1}}, {{2}}."
+          },
+          "format": {
+            "enum": [
+              "text",
+              "html"
+            ]
+          },
+          "waName": {
+            "type": "string",
+            "description": "The template's name at Meta."
+          },
+          "waParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What fills {{1}}, {{2}}..., such as {{first_name}}."
+          }
+        }
+      },
+      "TemplatePatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lang": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "text",
+              "html"
+            ]
+          },
+          "waName": {
+            "type": "string"
+          },
+          "waParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PreviewRequest": {
+        "type": "object",
+        "properties": {
+          "as": {
+            "type": "integer",
+            "description": "Which of the sample people; the first by default."
+          }
+        }
+      },
+      "Preview": {
+        "type": "object",
+        "required": [
+          "as",
+          "people",
+          "from",
+          "subject",
+          "text",
+          "html"
+        ],
+        "properties": {
+          "as": {
+            "type": "integer"
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "index",
+                "name"
+              ],
+              "properties": {
+                "index": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subject": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "html": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "SyncResult": {
+        "type": "object",
+        "required": [
+          "updated",
+          "added"
+        ],
+        "properties": {
+          "updated": {
+            "type": "integer"
+          },
+          "added": {
+            "type": "integer"
+          }
+        }
+      },
+      "List": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "size",
+          "withEmail",
+          "withPhone",
+          "usedBy",
+          "createdAt",
+          "createdBy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "withEmail": {
+            "type": "integer"
+          },
+          "withPhone": {
+            "type": "integer"
+          },
+          "usedBy": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        }
+      },
+      "ListList": {
+        "type": "object",
+        "required": [
+          "lists"
+        ],
+        "properties": {
+          "lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/List"
+            }
+          }
+        }
+      },
+      "ListImport": {
+        "type": "object",
+        "required": [
+          "name",
+          "csv"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "csv": {
+            "type": "string",
+            "description": "The file's text: a header with email or phone, and name, user_id and any fields."
+          }
+        }
+      },
+      "ImportedList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/List"
+          },
+          {
+            "type": "object",
+            "required": [
+              "skipped"
+            ],
+            "properties": {
+              "skipped": {
+                "type": "integer",
+                "description": "Rows without an email or a phone."
+              }
+            }
+          }
+        ]
+      },
+      "SegmentList": {
+        "type": "object",
+        "required": [
+          "segments"
+        ],
+        "properties": {
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "description",
+                "size"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "size": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Audience": {
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "segment",
+              "list"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Given back; read from Audience or the list."
+          }
+        }
+      },
+      "EstimateRequest": {
+        "type": "object",
+        "required": [
+          "channel",
+          "audience"
+        ],
+        "properties": {
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ]
+          },
+          "audience": {
+            "$ref": "#/components/schemas/Audience"
+          }
+        }
+      },
+      "Estimate": {
+        "type": "object",
+        "required": [
+          "size",
+          "counted",
+          "withAddress",
+          "suppressed",
+          "allowed"
+        ],
+        "properties": {
+          "size": {
+            "type": "integer"
+          },
+          "counted": {
+            "type": "integer",
+            "description": "People read, up to 5,000."
+          },
+          "withAddress": {
+            "type": "integer"
+          },
+          "suppressed": {
+            "type": "integer"
+          },
+          "allowed": {
+            "type": "integer",
+            "description": "May get a message now; consent is asked again for each one when it is sent."
+          }
+        }
+      },
+      "AbInput": {
+        "type": "object",
+        "required": [],
+        "properties": {
+          "subject": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Variant B's subject (email)."
+          },
+          "templateId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Variant B's template."
+          },
+          "share": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 50,
+            "default": 20
+          },
+          "metric": {
+            "enum": [
+              "opened",
+              "clicked"
+            ]
+          },
+          "waitHours": {
+            "type": "number",
+            "default": 4
+          }
+        }
+      },
+      "Counts": {
+        "type": "object",
+        "required": [
+          "messages",
+          "waiting",
+          "queued",
+          "held",
+          "suppressed",
+          "sent",
+          "delivered",
+          "opened",
+          "clicked",
+          "bounced",
+          "unsubscribed",
+          "failed",
+          "unknown",
+          "cancelled"
+        ],
+        "properties": {
+          "messages": {
+            "type": "integer"
+          },
+          "waiting": {
+            "type": "integer"
+          },
+          "queued": {
+            "type": "integer"
+          },
+          "held": {
+            "type": "integer"
+          },
+          "suppressed": {
+            "type": "integer"
+          },
+          "sent": {
+            "type": "integer"
+          },
+          "delivered": {
+            "type": "integer"
+          },
+          "opened": {
+            "type": "integer"
+          },
+          "clicked": {
+            "type": "integer"
+          },
+          "bounced": {
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "unknown": {
+            "type": "integer"
+          },
+          "cancelled": {
+            "type": "integer"
+          }
+        }
+      },
+      "Variant": {
+        "type": "object",
+        "required": [
+          "sent",
+          "opened",
+          "clicked",
+          "rate"
+        ],
+        "properties": {
+          "sent": {
+            "type": "integer"
+          },
+          "opened": {
+            "type": "integer"
+          },
+          "clicked": {
+            "type": "integer"
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "Campaign": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "channel",
+          "audience",
+          "template",
+          "ab",
+          "state",
+          "scheduledAt",
+          "startedAt",
+          "finishedAt",
+          "reading",
+          "audienceSize",
+          "noAddress",
+          "problem",
+          "counts",
+          "optOutsSince",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The utm_campaign its links carry."
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ]
+          },
+          "audience": {
+            "$ref": "#/components/schemas/Audience"
+          },
+          "template": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "subject"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "subject": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "ab": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "share",
+                  "metric",
+                  "winner",
+                  "a",
+                  "b",
+                  "results"
+                ],
+                "properties": {
+                  "templateId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "subject": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "share": {
+                    "type": "integer"
+                  },
+                  "metric": {
+                    "enum": [
+                      "opened",
+                      "clicked"
+                    ]
+                  },
+                  "waitHours": {
+                    "type": "number"
+                  },
+                  "testEndsAt": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "winner": {
+                    "enum": [
+                      "a",
+                      "b",
+                      null
+                    ]
+                  },
+                  "decidedAt": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "templateName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "a": {
+                    "type": "string"
+                  },
+                  "b": {
+                    "type": "string"
+                  },
+                  "results": {
+                    "type": "object",
+                    "required": [
+                      "a",
+                      "b"
+                    ],
+                    "properties": {
+                      "a": {
+                        "$ref": "#/components/schemas/Variant"
+                      },
+                      "b": {
+                        "$ref": "#/components/schemas/Variant"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "scheduled",
+              "sending",
+              "paused",
+              "sent"
+            ]
+          },
+          "scheduledAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "finishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reading": {
+            "type": "boolean"
+          },
+          "audienceSize": {
+            "type": "integer"
+          },
+          "noAddress": {
+            "type": "integer"
+          },
+          "problem": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "counts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "optOutsSince": {
+            "type": "integer"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "CampaignList": {
+        "type": "object",
+        "required": [
+          "campaigns"
+        ],
+        "properties": {
+          "campaigns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Campaign"
+            }
+          }
+        }
+      },
+      "CampaignInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "channel",
+          "audience",
+          "templateId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ]
+          },
+          "audience": {
+            "$ref": "#/components/schemas/Audience"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "ab": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AbInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "CampaignPatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/Audience"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "ab": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AbInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ScheduleRequest": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Now by default."
+          }
+        }
+      },
+      "CampaignMessages": {
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "address",
+                "name",
+                "state",
+                "reason",
+                "variant",
+                "sentAt"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "state": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "variant": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sentAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Step": {
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "send",
+              "wait",
+              "branch",
+              "exit"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "channel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp",
+              null
+            ]
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "minutes": {
+            "type": "integer"
+          },
+          "test": {
+            "enum": [
+              "opened",
+              "clicked",
+              "consent",
+              "field"
+            ]
+          },
+          "negate": {
+            "type": "boolean"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "field": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "otherwise": {
+            "type": "string",
+            "description": "exit, or the id of a later step."
+          }
+        }
+      },
+      "Trigger": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "event"
+            ],
+            "properties": {
+              "kind": {
+                "const": "event"
+              },
+              "event": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "segment"
+            ],
+            "properties": {
+              "kind": {
+                "const": "segment"
+              },
+              "segment": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Goal": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "event"
+            ],
+            "properties": {
+              "kind": {
+                "const": "event"
+              },
+              "event": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "segment-left"
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "Journey": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "utmCampaign",
+          "state",
+          "trigger",
+          "goal",
+          "steps",
+          "problem",
+          "stats",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "utmCampaign": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "live",
+              "paused"
+            ]
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/Trigger"
+          },
+          "goal": {
+            "$ref": "#/components/schemas/Goal"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          },
+          "problem": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stats": {
+            "type": "object",
+            "required": [
+              "entered",
+              "converted",
+              "active",
+              "steps"
+            ],
+            "properties": {
+              "entered": {
+                "type": "integer"
+              },
+              "converted": {
+                "type": "integer"
+              },
+              "active": {
+                "type": "integer"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "now",
+                    "passed"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "now": {
+                      "type": "integer"
+                    },
+                    "passed": {
+                      "type": "integer"
+                    },
+                    "sent": {
+                      "type": "integer"
+                    },
+                    "held": {
+                      "type": "integer"
+                    },
+                    "opened": {
+                      "type": "integer"
+                    },
+                    "clicked": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "JourneyList": {
+        "type": "object",
+        "required": [
+          "journeys"
+        ],
+        "properties": {
+          "journeys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Journey"
+            }
+          }
+        }
+      },
+      "JourneyInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "trigger",
+          "steps"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/Trigger"
+          },
+          "goal": {
+            "$ref": "#/components/schemas/Goal"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          }
+        }
+      },
+      "JourneyPatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/Trigger"
+          },
+          "goal": {
+            "$ref": "#/components/schemas/Goal"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          }
+        }
+      },
+      "EventBatch": {
+        "type": "object",
+        "required": [
+          "events"
+        ],
+        "properties": {
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "person"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_.:-]{0,63}$"
+                },
+                "person": {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "fields": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "EventResult": {
+        "type": "object",
+        "required": [
+          "received",
+          "entered",
+          "converted"
+        ],
+        "properties": {
+          "received": {
+            "type": "integer"
+          },
+          "entered": {
+            "type": "integer"
+          },
+          "converted": {
+            "type": "integer"
+          }
+        }
+      },
+      "BounceList": {
+        "type": "object",
+        "required": [
+          "bounces"
+        ],
+        "properties": {
+          "bounces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "channel",
+                "address",
+                "kind",
+                "reason",
+                "from",
+                "at"
+              ],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "email",
+                    "sms",
+                    "whatsapp"
+                  ]
+                },
+                "address": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "hard",
+                    "soft"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "from": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "OptOutList": {
+        "type": "object",
+        "required": [
+          "optouts"
+        ],
+        "properties": {
+          "optouts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "channel",
+                "address",
+                "source",
+                "at"
+              ],
+              "properties": {
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "email",
+                    "sms",
+                    "whatsapp"
+                  ]
+                },
+                "address": {
+                  "type": "string"
+                },
+                "source": {
+                  "enum": [
+                    "unsubscribe",
+                    "stop",
+                    "complaint"
+                  ]
+                },
+                "at": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErasureRequest": {
+        "type": "object",
+        "required": [
+          "reference",
+          "product",
+          "people"
+        ],
+        "properties": {
+          "reference": {
+            "type": "string"
+          },
+          "product": {
+            "type": "string"
+          },
+          "people": {
+            "type": "object",
+            "required": [
+              "emails",
+              "phones",
+              "userIds"
+            ],
+            "properties": {
+              "emails": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "phones": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "userIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErasureAnswer": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "done",
+              "waiting"
+            ]
+          },
+          "deleted": {
+            "type": "integer"
+          }
+        }
+      },
+      "HookResult": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+# Who messages come from, the providers each channel sends through, how consent is checked and the linked products.
+# This file is the only place they are set; a change is picked up within a minute, and a file with a mistake leaves
+# the last good one in place. Keys are never written here: each one names the environment variable that holds it.
+sender:
+  name: Acme Books
+  email: hello@example.com # the address emails come from; verified in SES, or allowed by your SMTP server
+  reply_to: support@example.com
+  address: Acme Books A.Ş., Kızılay, Ankara # shown at the foot of every email
+
+providers:
+  email:
+    primary:
+      kind: ses # Amazon SES, its v2 API
+      region: eu-central-1
+      access_key: MESSAGES_SES_ACCESS_KEY
+      secret_key: MESSAGES_SES_SECRET_KEY
+      configuration_set: messages # publishes bounces, complaints and deliveries to the SNS topic below
+      sns_topic: arn:aws:sns:eu-central-1:123456789012:messages
+      rate: 14 # messages a second, at most: your SES sending rate
+    fallback: # used only when SES surely did not take a message (it could not be reached, or answered 5xx)
+      kind: smtp
+      host: smtp.example.com
+      port: 587 # STARTTLS; 465 is TLS from the start
+      user: MESSAGES_SMTP_USER
+      password: MESSAGES_SMTP_PASSWORD
+      rate: 5
+  sms:
+    kind: netgsm # or iletimerkezi, with key: and secret:
+    sender: ACME # your approved sender name (başlık)
+    user: MESSAGES_NETGSM_USER
+    password: MESSAGES_NETGSM_PASSWORD
+    stop: "İptal için RET yazıp 4609'a gönderin." # added to every SMS that does not say it already
+    rate: 20
+  whatsapp:
+    kind: whatsapp # the WhatsApp Business Cloud API; only templates Meta approved are sent
+    phone_number_id: "109876543210"
+    business_account_id: "209876543210"
+    token: MESSAGES_WHATSAPP_TOKEN
+    app_secret: MESSAGES_WHATSAPP_APP_SECRET # checks the webhook's signature
+    verify_token: MESSAGES_WHATSAPP_VERIFY_TOKEN # what you type in Meta's webhook settings
+
+consent:
+  check: consent # ask Consent before every message; own: Messages' own opt-out list alone
+  purpose: marketing # the purpose in consent.yaml the messages are for
+  whatsapp: sms # Consent has no WhatsApp channel: the SMS answer counts for it (as İYS's MESAJ does)
+
+products:
+  consent: { token: MESSAGES_CONSENT_TOKEN } # an editor token of Consent: it checks, and records unsubscribes and STOPs
+  audience: { token: MESSAGES_AUDIENCE_TOKEN } # an editor token of Audience: segments to send to, and Messages' events
+
+limits:
+  quiet_hours: 21:00-09:00 # SMS and WhatsApp wait; email does not
+  timezone: Europe/Istanbul
+  soft_bounce_tries: 3 # an address that soft-bounces this many times in a row is treated as a hard bounce
+
+tracking:
+  opens: true
+  clicks: true # links go through Messages, which counts the click and sends the person on
+  utm_source: messages # with utm_medium (the channel) and utm_campaign (the campaign), which Analytics keeps
