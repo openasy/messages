@@ -375,7 +375,7 @@ export function JourneysPage({ call, onChanged }: { call: Call; onChanged: () =>
                         <span className="text-sm font-medium text-fg">{s.title}</span>
                         {s.detail && <span className="text-xs text-fg-muted">{s.detail}</span>}
                       </span>
-                      <span className="shrink-0 text-right font-mono text-xs tabular-nums">
+                      <span className="shrink-0 text-end font-mono text-xs tabular-nums">
                         {fmt(s.passed)}
                         {s.now > 0 && <span className="block text-2xs text-accent-text">{t("journeys.hereNow", { count: s.now })}</span>}
                       </span>

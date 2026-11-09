@@ -4,6 +4,7 @@ import { Mail, MessageCircle, MessageSquare, type LucideIcon } from "lucide-reac
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { api, MfaSetupRequired, Unauthorized, type CampaignState, type Channel } from "./api.ts";
 import type { T } from "./i18n.ts";
+import { viewerLocale } from "./i18n.ts";
 
 /** Data loading with the session; when it ends, the sign-in screen comes back. */
 export function useApi() {
@@ -59,7 +60,7 @@ export function Code({ children, label }: { children: ReactNode; label?: string 
   );
 }
 
-export const fmt = (n: number) => n.toLocaleString();
+export const fmt = (n: number) => n.toLocaleString(viewerLocale());
 export const pct = (n: number, of: number) => (of ? `${Math.round((n / of) * 1000) / 10}%` : "–");
 
 export const CHANNEL_ICON: Record<Channel, LucideIcon> = { email: Mail, sms: MessageSquare, whatsapp: MessageCircle };
@@ -75,7 +76,7 @@ export const STATE_TONE: Record<CampaignState, "neutral" | "info" | "warning" | 
 
 /** A date and time, short: 3 Nov 10:00. */
 export const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+  iso ? new Date(iso).toLocaleString(viewerLocale(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 
 /** A local datetime-local value from a Date. */
 export function localInput(d: Date) {

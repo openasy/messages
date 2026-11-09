@@ -40,7 +40,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Campaign, Overview, ProductLink, Provider, Settings, Summary } from "./api.ts";
 import { CampaignsPage } from "./campaigns.tsx";
 import { CHART_SERIES, channelName, fmt, pct, useApi, useLoad, type Call } from "./common.tsx";
-import { useT, type T } from "./i18n.ts";
+import { useT, type T, viewerLocale, setViewerLocale } from "./i18n.ts";
 import { JourneysPage } from "./journeys.tsx";
 import { BouncesPage, IntegrationsPage, SettingsFilePage, TemplatesPage } from "./pages.tsx";
 
@@ -126,7 +126,7 @@ function OverviewPage({ call, summary }: { call: Call; summary: Summary | undefi
               <StackedBarChart
                 label={t("overview.perDayLabel")}
                 categories={o.series.map((d) =>
-                  new Date(`${d.day}T00:00:00Z`).toLocaleDateString(undefined, { day: "numeric", month: "short", timeZone: "UTC" }),
+                  new Date(`${d.day}T00:00:00Z`).toLocaleDateString(viewerLocale(), { day: "numeric", month: "short", timeZone: "UTC" }),
                 )}
                 segments={CHART_SERIES.map((c) => ({ id: c, name: channelName(c, t) }))}
                 values={o.series.map((d) => [d.email, d.sms, d.whatsapp])}
@@ -308,6 +308,7 @@ export function App() {
   const installBrand = useInstallBrand();
   const [theme] = useThemePreference();
   const [locale] = useLocalePreference();
+  setViewerLocale(locale);
   return (
     // The install's brand from config/brand.env (ADR 0053); OpenAsy's own look where it sets none.
     <BrandProvider theme={theme} locale={locale} brand={{ name: "OpenAsy", organization: undefined, ...installBrand }} className="min-h-screen">

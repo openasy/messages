@@ -68,7 +68,7 @@ fieldset.border-0 {
   position: absolute;
   top: 1.75rem;
   bottom: 0;
-  left: 13px;
+  inset-inline-start: 13px;
   width: 1px;
   background: var(--oa-line);
 }
