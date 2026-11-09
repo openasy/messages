@@ -1,6 +1,6 @@
 {
   "name": "@openasy/messages",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "OpenAsy Messages: email, SMS and WhatsApp campaigns and journeys through your own providers, sent only to people whose consent holds when each message goes out.",
   "license": "AGPL-3.0-only",

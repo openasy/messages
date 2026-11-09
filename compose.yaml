@@ -5,7 +5,7 @@
 #   docker compose logs messages | grep 'no owner yet'   # the one-time link that creates the owner account
 services:
   messages:
-    image: ghcr.io/openasy/messages:0.1.0
+    image: ghcr.io/openasy/messages:0.1.1
     restart: unless-stopped
     read_only: true
     cap_drop: [ALL]
